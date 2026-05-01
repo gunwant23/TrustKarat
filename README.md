@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# TrustKarat
-=======
 # TrustKarat — Build & Run Guide
 
 ## Project Structure
