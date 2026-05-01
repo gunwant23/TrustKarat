@@ -1,0 +1,10 @@
+.wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100dvh; gap:28px; padding:24px; }
+.logo { font-size:28px; font-weight:800; color:var(--gold); }
+.spinner { position:relative; width:100px; height:100px; display:flex; align-items:center; justify-content:center; }
+.ring { position:absolute; inset:0; border-radius:50%; border:3px solid transparent; border-top-color:var(--gold); border-right-color:var(--gold); animation:spin 1s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.ringIcon { font-size:36px; }
+.step { font-size:15px; color:var(--muted); min-height:24px; text-align:center; }
+.dots { display:flex; gap:8px; }
+.dot { width:8px; height:8px; border-radius:50%; background:#1e3020; transition:background 0.3s; }
+.active { background:var(--gold); }

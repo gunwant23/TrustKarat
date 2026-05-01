@@ -1,0 +1,41 @@
+.wrap { display:flex; flex-direction:column; min-height:100dvh; padding:16px 20px 28px; gap:16px; overflow-y:auto; }
+.header { display:flex; align-items:center; justify-content:space-between; }
+.logo { font-size:22px; font-weight:800; color:var(--gold); }
+.badge { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; }
+.badge.green  { background:rgba(45,158,95,0.18);  color:var(--green);  border:1px solid var(--green); }
+.badge.orange { background:rgba(212,136,58,0.18); color:var(--orange); border:1px solid var(--orange); }
+.badge.red    { background:rgba(201,72,72,0.18);  color:var(--red);    border:1px solid var(--red); }
+
+.decision { display:flex; align-items:flex-start; gap:14px; padding:16px; border-radius:14px; }
+.decision.green  { background:rgba(45,158,95,0.12);  border:1.5px solid var(--green); }
+.decision.orange { background:rgba(212,136,58,0.12); border:1.5px solid var(--orange); }
+.decision.red    { background:rgba(201,72,72,0.12);  border:1.5px solid var(--red); }
+.decIcon { font-size:28px; flex-shrink:0; }
+.decTitle { font-size:18px; font-weight:700; color:var(--white); }
+.decMsg   { font-size:12px; color:var(--muted); margin-top:3px; line-height:1.5; }
+
+.card { background:var(--card); border:1px solid #1e3020; border-radius:16px; padding:16px; }
+.cardTitle { font-size:11px; font-weight:700; color:var(--gold); letter-spacing:2px; margin-bottom:12px; }
+.row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #111e12; }
+.row:last-child { border-bottom:none; }
+.rowLabel { font-size:12px; color:var(--muted); }
+.rowValue { font-size:13px; font-weight:600; color:var(--white); }
+.rowValue.green  { color:var(--green); }
+.rowValue.red    { color:var(--red); }
+.rowValue.gold   { color:var(--gold); }
+.divider { border-top:1px solid #1e3020; margin:8px 0; }
+
+.scoreRow { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.scoreLabel { font-size:11px; color:var(--muted); width:72px; flex-shrink:0; }
+.barTrack { flex:1; height:6px; background:#1e3020; border-radius:3px; overflow:hidden; }
+.barFill { height:100%; background:var(--gold); border-radius:3px; transition:width 0.8s ease; }
+.scoreNum { font-size:11px; color:var(--gold); width:24px; text-align:right; }
+
+.actions { display:flex; flex-direction:column; gap:12px; margin-top:auto; }
+
+.loanBox { background:rgba(201,168,76,0.08); border:1.5px solid var(--gold); border-radius:14px; padding:16px; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.loanLabel { font-size:11px; color:var(--muted); letter-spacing:1px; }
+.loanAmt   { font-size:32px; font-weight:800; color:var(--gold); }
+.loanNote  { font-size:11px; color:var(--muted); }
+
+.resetBtn { background:none; border:1.5px solid #1e3020; color:var(--muted); font-size:14px; padding:14px; border-radius:12px; }

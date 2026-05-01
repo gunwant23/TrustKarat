@@ -1,0 +1,39 @@
+:root {
+  --gold:    #C9A84C;
+  --gold-l:  #E2C97E;
+  --bg:      #09110E;
+  --card:    #0F1C14;
+  --card2:   #142010;
+  --white:   #F2EDE4;
+  --muted:   #6B8070;
+  --green:   #2D9E5F;
+  --red:     #C94848;
+  --orange:  #D4883A;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+input, select {
+  font-family: inherit;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
