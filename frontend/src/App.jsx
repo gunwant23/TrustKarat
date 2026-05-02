@@ -9,6 +9,7 @@ export default function App() {
   const [screen,  setScreen]  = useState("home");
   const [imageFile, setImageFile] = useState(null);
   const [audioBlob, setAudioBlob] = useState(null);
+  const [description, setDescription] = useState("");
   const [result,  setResult]  = useState(null);
 
   const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -19,6 +20,7 @@ export default function App() {
       const fd = new FormData();
       fd.append("image", imgFile, "jewelry.jpg");
       if (audBlob) fd.append("audio", audBlob, "tap.wav");
+      if (description.trim()) fd.append("description", description.trim());
 
       const res  = await fetch(`${API}/assess`, { method: "POST", body: fd });
       const data = await res.json();
@@ -39,6 +41,8 @@ export default function App() {
         <Capture
           onCapture={(f) => { setImageFile(f); go("audio"); }}
           onBack={() => go("home")}
+          description={description}
+          setDescription={setDescription}
         />
       )}
       {screen === "audio"   && (

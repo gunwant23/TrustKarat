@@ -151,12 +151,20 @@
   gap: 16px;
 }
 
-.preview {
+.descBox {
   width: 100%;
-  border-radius: 16px;
-  object-fit: cover;
-  max-height: 55dvh;
+  background: var(--card);
+  border: 1.5px solid #1e3020;
+  border-radius: 12px;
+  color: var(--white);
+  font-size: 13px;
+  padding: 12px 14px;
+  resize: none;
+  line-height: 1.5;
+  outline: none;
 }
+.descBox:focus { border-color: var(--gold); }
+.descBox::placeholder { color: var(--muted); }
 
 .previewHint {
   font-size: 12px;

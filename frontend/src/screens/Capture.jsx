@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import styles from "./Capture.module.css";
 
-export default function Capture({ onCapture, onBack }) {
+export default function Capture({ onCapture, onBack, description, setDescription }) {
   const videoRef   = useRef(null);
   const canvasRef  = useRef(null);
   const inputRef   = useRef(null);
@@ -109,6 +109,13 @@ export default function Capture({ onCapture, onBack }) {
           <p className={styles.previewHint}>
             Make sure the hallmark stamp is visible in the photo
           </p>
+          <textarea
+            className={styles.descBox}
+            rows={3}
+            placeholder={`Tell us more (optional):\n"Ancient bangle from grandmother" · "Bought from Tanishq, 22K" · "Has 916 stamp"`}
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+          />
           <div className={styles.btnRow}>
             <button className={styles.btnOutline} onClick={retake}>Retake</button>
             <button className={styles.btn} onClick={() => onCapture(file)}>
