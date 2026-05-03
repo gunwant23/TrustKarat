@@ -1,94 +1,70 @@
-"""
-Weight estimation via ₹10 coin reference (27mm diameter).
-Pixel-to-mm ratio → area → volume → weight using gold density.
-"""
-import cv2
-import numpy as np
+import math
 
-COIN_DIAMETER_MM  = 27.0   # ₹10 coin
-GOLD_DENSITY      = 17.5   # g/cm³ (average 18K-22K)
-HOLLOW_FACTOR     = 0.55   # most bangles/chains are ~55% solid
+PIXEL_TO_CM = 0.026
+GOLD_DENSITY = 19.3
 
-def _detect_coin(gray: np.ndarray):
-    """Detect circular coin using Hough circles."""
-    blurred = cv2.GaussianBlur(gray, (9, 9), 2)
-    circles = cv2.HoughCircles(
-        blurred, cv2.HOUGH_GRADIENT, dp=1.2,
-        minDist=50, param1=50, param2=30,
-        minRadius=20, maxRadius=200
-    )
-    if circles is not None:
-        c = np.uint16(np.around(circles))[0][0]
-        return int(c[2])  # radius in pixels
-    return None
+FILL_FACTORS = {
+    "FINGER RING": 0.6, "BANGLE": 0.5, "BRACELET": 0.4,
+    "CHAIN": 0.25, "NECKLACE": 0.35, "PENDANT": 0.35,
+    "EAR WEAR": 0.15, "NOSE SCREW": 0.1, "ARMBELT": 0.5,
+    "VODIYANAM": 0.6, "24 KT COIN": 0.95
+}
 
-def _detect_jewelry_area(gray: np.ndarray, pixel_per_mm: float):
-    """Detect largest non-circular object — the jewelry."""
-    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    if not contours:
-        return None
-    largest = max(contours, key=cv2.contourArea)
-    area_px = cv2.contourArea(largest)
-    area_mm2 = area_px / (pixel_per_mm ** 2)
-    return area_mm2
+def estimate_weight(img_path: str, declared_weight: float = None, detection: dict = None) -> dict:
 
-def estimate_weight(image_path: str, declared_weight: float = None) -> dict:
-    try:
-        img  = cv2.imread(image_path)
-        if img is None:
-            raise ValueError("Could not read image")
+    # If we have detection bounding box, use notebook logic
+    if detection and detection.get("width") and detection.get("height"):
+        label = detection.get("type", "").upper()
+        width_px = detection["width"]
+        height_px = detection["height"]
 
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        h, w = gray.shape
+        width_cm = width_px * PIXEL_TO_CM
+        height_cm = height_px * PIXEL_TO_CM
+        fill = FILL_FACTORS.get(label, 0.3)
+        volume = 0
 
-        # Try coin detection for scale reference
-        coin_radius_px = _detect_coin(gray)
+        if label in ["FINGER RING", "BANGLE"]:
+            r = width_cm / 2
+            thickness = 0.2 if label == "FINGER RING" else 0.4
+            volume = 2 * math.pi * r * (thickness ** 2)
 
-        if coin_radius_px:
-            pixel_per_mm = (coin_radius_px * 2) / COIN_DIAMETER_MM
-            method = "coin_reference"
+        elif label in ["CHAIN", "BRACELET"]:
+            length_factor = 3 if label == "CHAIN" else 2
+            thickness = 0.1 if label == "CHAIN" else 0.3
+            volume = (width_cm * length_factor) * (thickness ** 2)
+
+        elif label == "24 KT COIN":
+            r = width_cm / 2
+            volume = math.pi * r**2 * 0.2
+
+        elif label in ["PENDANT", "EAR WEAR", "NOSE SCREW"]:
+            thickness_map = {"PENDANT": 0.25, "EAR WEAR": 0.2, "NOSE SCREW": 0.1}
+            volume = width_cm * height_cm * thickness_map.get(label, 0.2)
+
+        elif label in ["ARMBELT", "VODIYANAM"]:
+            thickness = 0.5 if label == "ARMBELT" else 0.6
+            volume = (width_cm * 2.5) * (thickness ** 2)
+
+        elif label == "NECKLACE":
+            aspect_ratio = height_cm / width_cm if width_cm else 1
+            if aspect_ratio < 0.5:
+                volume = (width_cm * 2.5) * (0.2 ** 2)
+                fill = 0.3
+            else:
+                volume = width_cm * height_cm * 0.4
+                fill = 0.4
         else:
-            # Assume coin takes ~15% of image width (typical photo framing)
-            pixel_per_mm = (w * 0.15) / COIN_DIAMETER_MM
-            method = "estimated_scale"
+            volume = width_cm * height_cm * 0.2
 
-        area_mm2 = _detect_jewelry_area(gray, pixel_per_mm)
-        if area_mm2 is None:
-            area_mm2 = 600  # safe default for a bangle
+        volume *= fill
+        weight = volume * GOLD_DENSITY
+        if weight > 200:
+            weight = weight * 0.4
 
-        # Volume estimate: area × assumed depth (2mm for flat jewelry)
-        depth_mm     = 2.5
-        volume_mm3   = area_mm2 * depth_mm * HOLLOW_FACTOR
-        volume_cm3   = volume_mm3 / 1000
-        weight_g     = volume_cm3 * GOLD_DENSITY
+        return {"estimated_weight_g": round(weight, 2), "source": "vision"}
 
-        # Add declared weight signal if available
-        if declared_weight:
-            # Blend: 60% model, 40% declared
-            weight_g = 0.6 * weight_g + 0.4 * declared_weight
+    # Fallback to declared weight
+    if declared_weight:
+        return {"estimated_weight_g": declared_weight, "source": "declared"}
 
-        # Return a ±20% band
-        low  = round(weight_g * 0.85, 1)
-        high = round(weight_g * 1.15, 1)
-        conf = 0.78 if coin_radius_px else 0.62
-
-        return {
-            "weight_low_g":   low,
-            "weight_high_g":  high,
-            "weight_band":    f"{low} – {high} g",
-            "method":         method,
-            "confidence":     conf,
-            "coin_detected":  coin_radius_px is not None,
-        }
-
-    except Exception as e:
-        return {
-            "weight_low_g":  8.0,
-            "weight_high_g": 12.0,
-            "weight_band":   "8.0 – 12.0 g",
-            "method":        "fallback",
-            "confidence":    0.50,
-            "coin_detected": False,
-            "error":         str(e),
-        }
+    return {"estimated_weight_g": None, "source": "unknown"}

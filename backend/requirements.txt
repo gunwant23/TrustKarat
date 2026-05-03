@@ -10,3 +10,6 @@ xgboost==2.0.3
 joblib==1.4.0
 numpy==1.26.4
 Pillow==10.3.0
+inference-sdk
+easyocr
+opencv-python-headless

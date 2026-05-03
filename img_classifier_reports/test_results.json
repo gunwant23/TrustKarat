@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-05-03T15:02:06.690119",
+  "classes": [
+    "necklace",
+    "ring"
+  ],
+  "test_accuracy": 0.8627,
+  "best_val_acc": 0.9041,
+  "epochs": 40,
+  "architecture": "MobileNetV2 fine-tuned"
+}
