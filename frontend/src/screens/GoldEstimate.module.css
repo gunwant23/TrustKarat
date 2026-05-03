@@ -1,0 +1,235 @@
+.wrap {
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #f0f0f0;
+  padding: 0 0 40px;
+  font-family: 'Inter', sans-serif;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.logo {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f5c518;
+  letter-spacing: 0.5px;
+}
+
+.tag {
+  font-size: 0.75rem;
+  background: #1e1e1e;
+  color: #aaa;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* Price Card */
+.priceCard {
+  margin: 16px;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.priceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.priceLabel {
+  font-size: 0.8rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.trend {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.up   { color: #4caf50; background: #4caf5015; }
+.down { color: #f44336; background: #f4433615; }
+
+.bigPrice {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #f5c518;
+  margin-bottom: 4px;
+}
+
+.perG {
+  font-size: 1rem;
+  color: #888;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.loading {
+  color: #888;
+  font-size: 0.9rem;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.errorNote {
+  font-size: 0.75rem;
+  color: #f5a623;
+  margin-top: 4px;
+}
+
+.chart {
+  margin-top: 16px;
+}
+
+.chartLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #555;
+  margin-top: 4px;
+}
+
+/* Valuation Card */
+.card {
+  margin: 0 16px 16px;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+
+.cardTitle {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.rowLabel {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.rowValue {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  text-align: right;
+}
+
+.gold {
+  color: #f5c518;
+  font-size: 1.1rem;
+}
+
+.divider {
+  height: 1px;
+  background: #222;
+  margin: 10px 0;
+}
+
+/* Loan Card */
+.loanCard {
+  margin: 0 16px 16px;
+  background: linear-gradient(135deg, #1a2a1a, #0f1f0f);
+  border: 1px solid #2d4a2d;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+}
+
+.loanTitle {
+  font-size: 0.8rem;
+  color: #4caf50;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+
+.loanAmount {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #66bb6a;
+  margin-bottom: 6px;
+}
+
+.loanNote {
+  font-size: 0.8rem;
+  color: #81c784;
+  margin-bottom: 4px;
+}
+
+.loanMeta {
+  font-size: 0.72rem;
+  color: #555;
+}
+
+/* Disclaimer */
+.disclaimer {
+  margin: 0 16px 16px;
+  font-size: 0.72rem;
+  color: #555;
+  background: #111;
+  border: 1px solid #1e1e1e;
+  border-radius: 10px;
+  padding: 12px 14px;
+  line-height: 1.5;
+}
+
+/* Actions */
+.actions {
+  margin: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.continueBtn {
+  width: 100%;
+  padding: 16px;
+  background: #f5c518;
+  color: #000;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.continueBtn:hover { background: #e6b800; }
+
+.resetBtn {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  color: #888;
+  font-size: 0.9rem;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.resetBtn:hover { border-color: #444; color: #ccc; }
