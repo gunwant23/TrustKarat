@@ -1,175 +1,201 @@
-# TrustKarat — Build & Run Guide
+# TrustKarat — AI-Powered Gold Jewelry Assessment
+
+> Pre-screen gold jewelry for loan approval using computer vision, audio analysis, and NLP — before physical branch visit.
+
+**Live Demo:** https://trustkarat.vercel.app  
+**Backend API:** https://guns23-trustkarat-api.hf.space  
+**Docs:** https://guns23-trustkarat-api.hf.space/docs
+
+---
+
+## Overview
+
+TrustKarat is a full-stack AI application that helps NBFCs (Non-Banking Financial Companies) pre-assess gold jewelry for loan eligibility. A field agent photographs the jewelry, optionally records a tap sound, and receives an instant AI-generated assessment — reducing branch visit time and fraud risk.
+
+### Pipeline
+
+```
+Photo → Jewelry Detection → Hallmark OCR → Weight Estimation
+                                                    ↓
+Audio Tap → Purity Classification (SVM)    Decision Engine
+                                                    ↓
+Text Description → NLP Feature Extraction → Loan Pre-Approval / Reject
+```
+
+---
+
+## Features
+
+- **Jewelry Detection** — MobileNetV2 classifier (necklace, ring) with shape-based heuristic fallback for low-confidence predictions
+- **Hallmark OCR** — EasyOCR reads BIS hallmark codes (916, 750, 585, 22K, 18K, 14K)
+- **Weight Estimation** — Bounding box dimensions × gold density formula per jewelry type
+- **Audio Tap Test** — MFCC feature extraction → SVM classifier (14K / 22K / 24K purity)
+- **NLP Text Analysis** — Parses agent description for karat mentions, brand trust, age signals, fraud keywords
+- **Decision Engine** — Weighted scoring (Detection 40%, Audio 30%, Hallmark 20%, Weight 10%) with practical warnings
+- **Live Gold Price** — Fetches real-time gold price and computes provisional loan offer (75% LTV per RBI guidelines)
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React + Vite, CSS Modules |
+| Backend | FastAPI + Uvicorn |
+| Jewelry Detection | MobileNetV2 (PyTorch) + shape heuristics |
+| Hallmark OCR | EasyOCR |
+| Audio Purity | librosa MFCC + SVM (scikit-learn) |
+| NLP | Custom rule-based feature extractor |
+| Deployment | Hugging Face Spaces (Docker) + Vercel |
+
+---
 
 ## Project Structure
+
 ```
-trustkarat/
+TrustKarat/
 ├── backend/
-│   ├── main.py              ← FastAPI server (entry point)
-│   ├── requirements.txt     ← Python dependencies
+│   ├── main.py                  ← FastAPI server, /assess endpoint
+│   ├── Dockerfile               ← HF Spaces deployment
+│   ├── requirements.txt
 │   └── models/
-│       ├── detector.py      ← YOLOv8n jewelry detection
-│       ├── ocr.py           ← EasyOCR hallmark reading
-│       ├── audio.py         ← librosa MFCC + SVM tap test
-│       ├── weight.py        ← Coin-reference weight estimation
-│       └── decision.py      ← XGBoost loan decision
+│       ├── detector.py          ← MobileNetV2 + heuristic fallback
+│       ├── ocr.py               ← EasyOCR hallmark reader
+│       ├── audio.py             ← SVM tap-test purity classifier
+│       ├── weight.py            ← Bounding box weight estimation
+│       ├── decision.py          ← Weighted scoring + loan decision
+│       ├── text_features.py     ← NLP feature extraction & fusion
+│       ├── jewelry_classifier.pkl  ← Trained MobileNetV2 weights
+│       ├── svm_purity.pkl       ← Trained SVM for audio purity
+│       ├── scaler.pkl           ← Feature scaler for SVM
+│       └── label_encoder.pkl    ← Label encoder for SVM output
 └── frontend/
-    ├── index.html
-    ├── package.json
-    ├── vite.config.js
-    └── src/
-        ├── App.jsx
-        ├── main.jsx
-        ├── index.css
-        └── screens/
-            ├── Home.jsx + .module.css
-            ├── Capture.jsx + .module.css
-            ├── AudioTest.jsx + .module.css
-            ├── Loading.jsx + .module.css
-            └── Results.jsx + .module.css
+    ├── src/
+    │   ├── App.jsx              ← Screen router
+    │   └── screens/
+    │       ├── Home.jsx
+    │       ├── Capture.jsx      ← Photo + description input
+    │       ├── AudioTest.jsx    ← 10-second tap recording
+    │       ├── Loading.jsx
+    │       ├── GoldEstimate.jsx ← Live gold price + loan offer
+    │       └── Results.jsx      ← Full assessment report
+    ├── .env                     ← VITE_API_URL
+    └── vite.config.js
 ```
 
 ---
 
-## DAY 1 — Setup & Backend Live
+## API
 
-### P1 (ML) + P2 (Backend): Do this together
+### `POST /assess`
 
-```bash
-# 1. Clone / unzip the project
-cd trustkarat/backend
+| Field | Type | Required |
+|---|---|---|
+| `image` | File | ✅ |
+| `audio` | File | ❌ |
+| `declared_weight` | Float | ❌ |
+| `description` | String | ❌ |
 
-# 2. Create virtual environment
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-
-# 3. Install dependencies  (~5 min, downloads models)
-pip install -r requirements.txt
-
-# 4. Run the server
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
-# 5. Test it works — open browser:
-# http://localhost:8000
-# Should show: {"status": "TrustKarat API live"}
-```
-
-### P3 (Frontend): Do this in parallel
-
-```bash
-cd trustkarat/frontend
-
-# 1. Install
-npm install
-
-# 2. Create .env file
-echo "VITE_API_URL=http://localhost:8000" > .env
-
-# 3. Run
-npm run dev
-
-# 4. Open on phone:
-# Find your laptop IP: ipconfig (Windows) or ifconfig (Mac)
-# Open http://YOUR_IP:5173 on phone
-```
-
-**End of Day 1 goal:** Open the app on your phone → tap Start → camera opens → take photo → audio screen appears.
-
----
-
-## DAY 2 — Connect & Test Real Models
-
-### First API test (P2 runs this)
-```bash
-# Test the assess endpoint with a real image
-curl -X POST http://localhost:8000/assess \
-  -F "image=@test_gold.jpg" \
-  | python -m json.tool
-```
-
-### Expected response shape:
+**Response:**
 ```json
 {
   "decision": "Pre-Approved",
   "decision_color": "green",
-  "message": "Gold assessment passed. Proceed to custody collection.",
+  "message": "Assessment passed. Verify weight physically before final approval.",
+  "warnings": ["⚠ Audio tap test skipped — purity unverified"],
   "risk_level": "Low",
-  "confidence": "78%",
-  "jewelry_type": "bangle",
+  "confidence": "74%",
+  "jewelry_type": "necklace",
   "hallmark_code": "916",
   "hallmark_genuine": true,
   "karat_band": "22K",
-  "weight_band": "9.5 – 12.0 g",
-  "audio_purity": "22K",
+  "weight_band": "17.6g",
+  "audio_purity": "Not tested",
   "fraud_flags": "None",
   "scores": {
     "hallmark": 90,
     "detection": 72,
     "weight": 80,
-    "audio": 90
+    "audio": 65
   }
 }
 ```
 
-### Connect frontend to real backend (P3)
-Update `.env`:
-```
-VITE_API_URL=http://YOUR_LAPTOP_IP:8000
+### `GET /health`
+```json
+{"status": "ok"}
 ```
 
 ---
 
-## DAY 3 — Deploy & Wrap APK
+## Local Setup
 
-### Deploy Backend to Render (free, 10 min)
+### Backend
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
 
-1. Push `backend/` folder to a GitHub repo
-2. Go to render.com → New → Web Service
-3. Connect GitHub repo
-4. Settings:
-   - Build Command: `pip install -r requirements.txt`
-   - Start Command: `uvicorn main:app --host 0.0.0.0 --port 10000`
-5. Copy the live URL (e.g. `https://trustkarat-api.onrender.com`)
+### Frontend
+```bash
+cd frontend
+npm install
+# Create .env file:
+echo "VITE_API_URL=http://localhost:8000" > .env
+npm run dev
+```
 
-### Deploy Frontend to Vercel (free, 5 min)
-
-1. Push `frontend/` to GitHub
-2. Go to vercel.com → New Project → Import repo
-3. Add Environment Variable:
-   - `VITE_API_URL` = `https://trustkarat-api.onrender.com`
-4. Deploy → get URL like `https://trustkarat.vercel.app`
-
-### Wrap as APK using PWABuilder (free, zero code)
-
-1. Open https://www.pwabuilder.com
-2. Enter your Vercel URL
-3. Click Build → Android → Download
-4. You get a signed `.apk` file — submit this to judges
+Open **http://localhost:5173**
 
 ---
 
-## Troubleshooting
+## Deployment
 
-| Problem | Fix |
+### Backend — Hugging Face Spaces (Docker)
+```bash
+# Push models/ and main.py to HF Space repo
+git remote add hf https://huggingface.co/spaces/Guns23/trustkarat-api
+git push hf main
+```
+
+### Frontend — Vercel
+```
+Root Directory : frontend
+Build Command  : npm run build
+Output Dir     : dist
+Env Var        : VITE_API_URL = https://guns23-trustkarat-api.hf.space
+```
+
+---
+
+## Decision Logic
+
+| Score | Decision |
 |---|---|
-| Camera not opening | Must use HTTPS or localhost — Vercel gives HTTPS automatically |
-| CORS error | Backend has CORS open for all origins — restart server |
-| YOLOv8 slow first run | Downloads weights once (~6MB) — subsequent runs are fast |
-| EasyOCR slow first run | Downloads language model once (~100MB) — expected |
-| Audio not recording | Browser requires HTTPS for microphone — use Vercel URL |
+| ≥ 75 + hallmark + audio | Pre-Approved ✅ |
+| ≥ 72 + hallmark | Pre-Approved ✅ |
+| 60 – 72 | Needs Verification ⚠ |
+| 50 – 60 | Needs Verification ⚠ |
+| 35 – 50 | Reject ❌ |
+| < 35 | Reject ❌ |
+
+**Scoring weights:** Detection 40% · Audio 30% · Hallmark 20% · Weight 10%  
+**Text blend:** Final = model score × 85% + text score × 15%  
+**Loan offer:** 75% of estimated gold value (RBI LTV guideline)
 
 ---
 
-## Quick demo script (for judges)
+## Known Limitations
 
-1. Open app → tap **Start Assessment**
-2. Photograph a gold ring/bangle → tap **Use This Photo**
-3. Screen shows tap test → tap **Ready** → drop the jewelry → it records
-4. Loading screen shows AI steps (5 seconds)
-5. Results screen shows: jewelry type, weight band, purity, hallmark code, risk level, loan offer
+- Jewelry classifier trained only on necklace and ring — other types use shape heuristics
+- Weight estimation based on pixel dimensions, not physical scale
+- Audio purity requires quiet environment for accurate recording
+- No user authentication (prototype only)
+- Gold price fetched from free API — may have brief delays
 
-**Key things to say:**
-- "We use YOLOv8n for jewelry detection, EasyOCR for hallmark reading, and librosa MFCC for audio purity analysis — all running on our FastAPI server"
-- "The ₹10 coin in the frame is our scale reference for weight estimation"
-- "XGBoost fuses all signals into the final loan decision"
-- "All models export to ONNX/TFLite — ready for on-device inference"
->>>>>>> b55bdfe (Basic Commit)
+---
+
+## License
+
+MIT License — open for research and educational use.
