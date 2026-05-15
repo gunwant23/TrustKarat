@@ -2,7 +2,7 @@
 
 > Pre-screen gold jewelry for loan approval using computer vision, audio analysis, and NLP — before physical branch visit.
 
-**Live Demo:** https://trustkarat.vercel.app  
+**Live Demo:** [https://trustkarat.vercel.app](https://trust-karat.vercel.app/)  
 **Backend API:** https://guns23-trustkarat-api.hf.space  
 **Docs:** https://guns23-trustkarat-api.hf.space/docs
 
